@@ -69,8 +69,10 @@ for file in "$in"/*; do
     echo -e "\t$file"
     total=$(ffprobe -i "$file" -v quiet \
         -show_entries format=duration -of csv="p=0" | sed 's/\.[^.]*$//')
-    if [[ $(echo "$total" | grep -cE '^[1-9][0-9]+$') -le 0 ]]; then
-        fail "Could not read video. Remove the file above and try again."
+    if [[ $(echo "$total" | grep -c '^[1-9][0-9]*$') -le 0 ]]; then
+        ffprobe -i "$file" -v error > /dev/null
+        echo -e "\t\tCould not read video, file will be skipped!"
+        continue
     fi
 
     start=0
