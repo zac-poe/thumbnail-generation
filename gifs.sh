@@ -22,9 +22,15 @@ fi
 echo "Generating gifs..."
 for file in "$in"/*; do
     echo -e "\t$file"
-    ffprobe -i "$file" -show_entries format=duration -v quiet -of csv="p=0"
-    ffmpeg -i "$file" -v warning \
-        -t "$length_seconds" \
-        -vf "fps=$framerate,scale=$scale:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse=dither=bayer" \
-        -r "$sample_rate" -y "$out/${file##*/}.gif"
+    total=$(ffprobe -i "$file" -v quiet \
+        -show_entries format=duration -of csv="p=0" | sed 's/\.[^.]*$//')
+    start=0
+    while [[ "$start" -lt "$total" ]]; do
+        gif="$(printf "$out/${file##*/}.%04d.gif" $start)"
+        ffmpeg -i "$file" -v warning \
+            -t "$length_seconds" -ss "$start" \
+            -vf "fps=$framerate,scale=$scale:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse=dither=bayer" \
+            -r "$sample_rate" -y "$gif"
+        let start="$start"+"$length_seconds"
+    done
 done
