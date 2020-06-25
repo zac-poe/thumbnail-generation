@@ -7,7 +7,9 @@ This repo contains wrapper scripts for simplifying [ffmpeg](https://ffmpeg.org/)
 Gif generation has options for length, size, and quality. See script usage for details.
 
 # Image Generation
-`thumbs.sh` creates a series of png files from input videos
+`thumbs.sh` creates a series of image files from input videos
+
+Image generation has options for frequency and format. See script usage for details.
 
 # Usage
 Executable scripts respond to `help` or `-h` (or any unsupported options) with providing usage instructions.

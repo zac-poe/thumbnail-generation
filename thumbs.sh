@@ -1,22 +1,62 @@
 #!/bin/bash
+#
+# This script generates image files for frames from input video files
+#
 
 cd "$(dirname "$0")"
+. "common.sh"
 
-in='input'
-out='output'
-
+# defaults
 framerate=1
+format='png'
 
-if [[ ! -d "$in" ]]; then
-    echo "Input directory '$in' not found!"
+usage() {
+    echo "Usage: $(basename "$0") [-i inputDir] [-o outputDir] [-r framerate] [-f format] [-v verbosity]"
+    echo -e "\nOptions:"
+    echo -e "\t-i inputDirectory"
+    echo -e "\t\tDirectory containing video files to read"
+    echo -e "\t\tDefault: $in"
+    echo -e "\t-o outputDirectory"
+    echo -e "\t\tDirectory to write gifs to"
+    echo -e "\t\tDefault: $out"
+    echo -e "\t-r framerate"
+    echo -e "\t\tFramerate frequency to generate images (seconds ratio)"
+    echo -e "\t\tDefault: $framerate"
+    echo -e "\t-f format"
+    echo -e "\t\tOutput image format"
+    echo -e "\t\tDefault: $format"
+    echo -e "\t-v verbosity"
+    echo -e "\t\tFfmpeg verbosity log level"
+    echo -e "\t\tDefault: $log_level"
     exit 1
+}
+
+while getopts "i:o:r:f:v:" opt; do
+    case "$opt" in
+        i) in=$OPTARG;;
+        o) out=$OPTARG;;
+        r) framerate=$OPTARG;;
+        f) format=$OPTARG;;
+        v) log_level=$OPTARG;;
+        *) usage;;
+    esac
+done
+OPTIND=1
+
+# simple support for usage like 'this.sh help', or to prevent unintentional misuse with flags
+if [[ ${#1} -gt 0 && $(printf -- "$1" | grep -c '^-') -le 0 ]]; then
+    usage
 fi
 
-if [[ ! -d "$out" ]]; then
-    mkdir "$out"
-fi
+validate_directories
 
-echo -e "Generating thumbs..."
-ls "$in" | xargs -I {} ffmpeg -i "$in/{}" -v warning \
-    -vf fps="$framerate" \
-    -y "$out/{}.%04d.png"
+echo "Generating thumbnails..."
+for file in "$in"/*; do
+    echo -e "\t$file"
+    image=${file##*/}
+    ffmpeg -i "$file" -v "$log_level" \
+        -vf fps="$framerate" \
+        -y "$out/${image%.*}-%04d.$format"
+done
+
+echo "All thumbnails created"
