@@ -12,9 +12,10 @@ sample_rate=30
 framerate=15
 length_seconds=5
 dither=bayer
+cleanup=false
 
 usage() {
-    echo "Usage: $(basename "$0") [-i inputDir] [-o outputDir] [-l length] [-s scale] [-f framerate] [-r sampleRate] [-d dither] [-v verbosity]"
+    echo "Usage: $(basename "$0") [-i inputDir] [-o outputDir] [-l length] [-s scale] [-f framerate] [-r sampleRate] [-d dither] [-v verbosity] [-c]"
     echo -e "\nOptions:"
     echo -e "\t-i inputDirectory"
     echo -e "\t\tDirectory containing video files to read"
@@ -40,10 +41,12 @@ usage() {
     echo -e "\t-v verbosity"
     echo -e "\t\tFfmpeg verbosity log level"
     echo -e "\t\tDefault: $log_level"
+    echo -e "\t-c"
+    echo -e "\t\tCleanup files after gif generation"
     exit 1
 }
 
-while getopts "i:o:l:s:f:r:v:" opt; do
+while getopts "i:o:l:s:f:r:v:c" opt; do
     case "$opt" in
         i) in=$OPTARG;;
         o) out=$OPTARG;;
@@ -52,6 +55,7 @@ while getopts "i:o:l:s:f:r:v:" opt; do
         f) framerate=$OPTARG;;
         r) sample_rate=$OPTARG;;
         v) log_level=$OPTARG;;
+	c) cleanup=true;;
         *) usage;;
     esac
 done
@@ -86,6 +90,10 @@ for file in "$in"/*; do
             -r "$sample_rate" -y "$gif"
         let start="$start"+"$length_seconds"
     done
+
+    if [[ "$cleanup" = true ]]; then
+        rm "$file"
+    fi
 done
 
 echo "All gifs created"

@@ -9,9 +9,10 @@ cd "$(dirname "$0")"
 # defaults
 framerate=1
 format='png'
+cleanup=false
 
 usage() {
-    echo "Usage: $(basename "$0") [-i inputDir] [-o outputDir] [-r framerate] [-f format] [-v verbosity]"
+    echo "Usage: $(basename "$0") [-i inputDir] [-o outputDir] [-r framerate] [-f format] [-v verbosity] [-c]"
     echo -e "\nOptions:"
     echo -e "\t-i inputDirectory"
     echo -e "\t\tDirectory containing video files to read"
@@ -28,16 +29,20 @@ usage() {
     echo -e "\t-v verbosity"
     echo -e "\t\tFfmpeg verbosity log level"
     echo -e "\t\tDefault: $log_level"
+    echo -e "\t-c"
+    echo -e "\t\tCleanup input files after image generation"
+    echo -e "\t\tDefault: disabled"
     exit 1
 }
 
-while getopts "i:o:r:f:v:" opt; do
+while getopts "i:o:r:f:v:c" opt; do
     case "$opt" in
         i) in=$OPTARG;;
         o) out=$OPTARG;;
         r) framerate=$OPTARG;;
         f) format=$OPTARG;;
         v) log_level=$OPTARG;;
+	c) cleanup=true;;
         *) usage;;
     esac
 done
@@ -57,6 +62,10 @@ for file in "$in"/*; do
     ffmpeg -i "$file" -v "$log_level" \
         -vf fps="$framerate" \
         -y "$out/${image%.*}-%04d.$format"
+
+    if [[ "$cleanup" = true ]]; then
+        rm "$file"
+    fi
 done
 
 echo "All thumbnails created"
