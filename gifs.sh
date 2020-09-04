@@ -7,8 +7,8 @@ cd "$(dirname "$0")"
 . "common.sh"
 
 # defaults
-scale=320
-sample_rate=30
+scale=640
+sample_rate=15
 framerate=15
 length_seconds=5
 dither=bayer
