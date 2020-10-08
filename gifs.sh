@@ -13,9 +13,10 @@ framerate=15
 length_seconds=5
 dither=bayer
 cleanup=false
+begin_time=0
 
 usage() {
-    echo "Usage: $(basename "$0") [-i inputDir] [-o outputDir] [-l length] [-s scale] [-f framerate] [-r sampleRate] [-d dither] [-v verbosity] [-c]"
+    echo "Usage: $(basename "$0") [-i inputDir] [-o outputDir] [-l length] [-b beginTime] [-s scale] [-f framerate] [-r sampleRate] [-d dither] [-v verbosity] [-c]"
     echo -e "\nOptions:"
     echo -e "\t-i inputDirectory"
     echo -e "\t\tDirectory containing video files to read"
@@ -26,6 +27,9 @@ usage() {
     echo -e "\t-l length"
     echo -e "\t\tMax length in seconds for output gifs"
     echo -e "\t\tDefault: $length_seconds"
+    echo -e "\t-b beginTime"
+    echo -e "\t\tBegin at specified video time for gif creation"
+    echo -e "\t\tDefault: $begin_time"
     echo -e "\t-s scale"
     echo -e "\t\tOutput image scale for gifs"
     echo -e "\t\tDefault: $scale"
@@ -46,11 +50,12 @@ usage() {
     exit 1
 }
 
-while getopts "i:o:l:s:f:r:v:c" opt; do
+while getopts "i:o:l:s:f:r:v:b:c" opt; do
     case "$opt" in
         i) in=$OPTARG;;
         o) out=$OPTARG;;
         l) length_seconds=$OPTARG;;
+	b) begin_time=$OPTARG;;
         s) scale=$OPTARG;;
         f) framerate=$OPTARG;;
         r) sample_rate=$OPTARG;;
@@ -79,7 +84,7 @@ for file in "$in"/*; do
         continue
     fi
 
-    start=0
+    start=$begin_time
     while [[ "$start" -lt "$total" ]]; do
         echo -e "\t\t$start to $(($start + $length_seconds))"
         gif="${file##*/}"
